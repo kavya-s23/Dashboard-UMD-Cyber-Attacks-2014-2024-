@@ -1,0 +1,27 @@
+import pandas as pd
+
+
+
+# LOADING DATASET
+df = pd.read_excel(r"C:\Users\nivi1\Downloads\UMD Cyber Attacks Dataset.xlsx", sheet_name="Sheet 1")
+
+# CLEANING STEPS
+df.columns = df.columns.str.strip()
+df['event_date'] = pd.to_datetime(df['event_date'], errors='coerce')
+df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+df['event_subtype'].fillna("Unknown", inplace=True)
+df['description'].fillna("No description", inplace=True)
+df['source_url'].fillna("No source", inplace=True)
+df['actor_country'].fillna("Unknown", inplace=True)
+
+df.drop_duplicates(inplace=True)
+
+for col in ['year', 'month', 'industry_code']:
+    df[col] = pd.to_numeric(df[col], errors='coerce').astype('Int64')
+
+# SAVE BACK TO SAME FILE AND SHEET
+with pd.ExcelWriter(r"C:\Users\nivi1\Downloads\UMD Cyber Attacks Dataset.xlsx", engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
+    df.to_excel(writer, sheet_name="Sheet 1", index=False)
+
+print("Cleaned data written back to the same Excel sheet successfully!")
